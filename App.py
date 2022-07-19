@@ -20,8 +20,6 @@ image_index = 0
 zoomin_level = 0
 zoomout_level = 0
 
-def changeimage():
-    openimage("images/cat.jpg")
 
 def display_image():
     global img, currentimg
@@ -32,37 +30,9 @@ def display_image():
     else:
         print("Image not loaded")
 
-def addimage(label, image):
-    global img
-    if image!=None:
-        img = ImageTk.PhotoImage(image=image)
-        label.configure(image=img)
-    else:
-        print("Image not loaded")
-
-def selectfiles():
-    filepath = tkinter.filedialog.askopenfilenames(initialdir=os.curdir+"/images")
-    openimage(filepath[0])
-
 def selectmultiplefiles():
     filepaths = tkinter.filedialog.askopenfilenames(initialdir=os.curdir+"/images")
     openmultipleimages(filepaths)
-    
-def openimage(filepath):
-    global currentimg, images
-    images.append(Image.open(filepath))
-    print(images)
-    currentimg = Image.open(filepath)
-    if(currentimg.width > 500 and currentimg.width > currentimg.height):
-        ratio = 500/currentimg.width
-        print(ratio)
-        currentimg = currentimg.resize((500,int(currentimg.height*ratio)))
-        print((500,int(500*ratio)))
-
-    elif(currentimg.height > 500 and currentimg.width < currentimg.height):
-        ratio = 500/currentimg.width
-        currentimg = currentimg.resize((500,int(currentimg.height*ratio)))
-    addimage(label, currentimg)
 
 
 def openmultipleimages(filepaths):
@@ -82,22 +52,24 @@ def openmultipleimages(filepaths):
     print(images)
 
 def zoomout():
-    global img, currentimg
+    global img, zoomout_level, zoomin_level
     if currentimg!=None:
-        image = currentimg.resize((int(currentimg.width*0.9),int(currentimg.height*0.9)))
+        zoomout_level+=1
+        zoomin_level-=1
+        image = images[image_index].resize((int(images[image_index].width*0.9**zoomout_level),int(images[image_index].height*0.9**zoomout_level)))
         img = ImageTk.PhotoImage(image=image)
-        currentimg = image
         label.configure(image=img)
     else:
         print("Image not loaded")
 
 
 def zoomin():
-    global img, currentimg
+    global img, zoomout_level, zoomin_level
     if currentimg!=None:
-        image = currentimg.resize((int(currentimg.width*1.1),int(currentimg.height*1.1)))
+        zoomout_level-=1
+        zoomin_level+=1
+        image = images[image_index].resize((int(currentimg.width*1.1**zoomin_level),int(currentimg.height*1.1**zoomin_level)))
         img = ImageTk.PhotoImage(image=image)
-        currentimg = image
         label.configure(image=img)
     else:
         print("Image not loaded")
@@ -116,7 +88,11 @@ def nextImage():
     display_image()
 
 def prevImage():
-    ...
+    global image_index
+    image_index-=1
+    if image_index==0:
+        image_index = len(images)
+    display_image()
 
 currentimg = None
 menu = tk.Menu(root)
@@ -139,8 +115,6 @@ resizerframe = tk.Frame(root, highlightbackground="black", highlightthickness=2,
 resizerframe.columnconfigure(0, weight=1)
 resizerframe.columnconfigure(1, weight=1)
 resizerframe.grid(column=0, row=2, sticky="sew")
-changeimgbtn = ttk.Button(root, text="Change Image", command = changeimage)
-changeimgbtn.grid(column=0, row=3, sticky="NSEW")
 resizedown = ttk.Button(resizerframe, text="Zoom Out", command = lambda: zoomout())
 resizedown.grid(column=0, row=0, sticky="S")
 resizeup = ttk.Button(resizerframe, text="Zoom In", command = lambda: zoomin())
