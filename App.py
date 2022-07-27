@@ -2,6 +2,7 @@ from code import compile_command
 from textwrap import indent
 import tkinter as tk
 import os
+from tkinter import messagebox
 import tkinter.filedialog
 from turtle import right
 from cv2 import resize
@@ -36,7 +37,8 @@ class App(tk.Tk):
 
         self.menu.add_cascade(label='File',menu=self.file)
         self.file.add_command(label="Open", command = self.selectmultiplefiles)
-        self.menu.add_command(label="newfile", command=None)
+        self.file.add_command(label="Select Folder", command= self.choosefolder)
+        self.file.add_command(label="Reset", command= self.clearimages)        
 
         self.middleframe.grid(column=0, row=0, sticky="EW")
         self.middleframe.columnconfigure(0, weight=1)
@@ -72,7 +74,6 @@ class App(tk.Tk):
         filepaths = tkinter.filedialog.askopenfilenames(initialdir=os.curdir+"/images")
         self.openmultipleimages(filepaths)
 
-
     def openmultipleimages(self, filepaths):
         for filepath in filepaths:
             opened_image = Image.open(filepath)
@@ -86,6 +87,15 @@ class App(tk.Tk):
             self.images.append(opened_image)
             self.display_image()
 
+    def choosefolder(self):
+        folder = tkinter.filedialog.askdirectory(initialdir=os.curdir+"/images")
+        self.openmultipleimages([folder+"/"+i for i in os.listdir(folder)])
+
+    def clearimages(self):
+        self.images = []
+        self.img = None
+        self.currentimg = None
+
     def zoomout(self):
         if self.currentimg!=None:
             self.zoomout_level+=1
@@ -94,6 +104,7 @@ class App(tk.Tk):
             self.img = ImageTk.PhotoImage(image=image)
             self.label.configure(image=self.img)
         else:
+            messagebox.showwarning("No Image", "Add an image")
             print("Image not loaded")
 
 
@@ -105,6 +116,7 @@ class App(tk.Tk):
             self.img = ImageTk.PhotoImage(image=image)
             self.label.configure(image=self.img)
         else:
+            messagebox.showwarning("No Image", "Add an image")
             print("Image not loaded")
 
     def zoominevent(self, event):
@@ -136,4 +148,5 @@ class App(tk.Tk):
         self.prevImage()
     
 root = App()
+root.geometry("1280x720+200+0")
 root.mainloop()
