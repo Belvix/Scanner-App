@@ -17,25 +17,26 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()        
         self.images = list()
+        self.images: list[ScannerImage]
         self.image_index = 0
-        self.img = None
 
         self.zoomin_level = 0
         self.zoomout_level = 0
 
-        self.currentimg = None
+        self.NO_IMAGE = ScannerImage()
+
+        self.currentimg = self.NO_IMAGE
+        self.img = self.currentimg.shown_image
 
         self.menu = tk.Menu(self)
         self.file = tk.Menu(self.menu,tearoff=0)
-        self.middleframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN)
-        self.label = ttk.Label(self.middleframe,text='No Image' ,image = None)
+        self.middleframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN, height=500)
+        self.label = ttk.Label(self.middleframe, image = self.currentimg.shown_image)
         self.resizerframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN)
         self.previousimage = ttk.Button(self.middleframe, text="Prev")
         self.nextimage = ttk.Button(self.middleframe, text="Next")
         self.resizedown = ttk.Button(self.resizerframe, text="Zoom Out")
         self.resizeup = ttk.Button(self.resizerframe, text="Zoom In")
-        tk.Grid.rowconfigure(self, 0, weight=1)
-        tk.Grid.columnconfigure(self, 0, weight=1)
 
         self.menu.add_cascade(label='File',menu=self.file)
         self.file.add_command(label="Open", command = self.selectmultiplefiles)
@@ -58,6 +59,9 @@ class App(tk.Tk):
         self.resizeup.config(command=self.zoomin)
         self.resizeup.grid(column=1, row=0, sticky="S")
 
+        self.rowconfigure(0, weight=1, minsize=500, pad=1000)
+        self.columnconfigure(0, weight=1, minsize=500)
+
         self.bind('<Up>',self.zoominevent)
         self.bind('<Down>',self.zoomoutevent)
         self.bind('<Right>', self.nextImageEvent)
@@ -67,7 +71,7 @@ class App(tk.Tk):
     def display_image(self):
         self.currentimg = self.images[self.image_index]
         if self.currentimg!=None:
-            self.img = ImageTk.PhotoImage(image=self.currentimg)
+            self.img = self.currentimg.shown_image
             self.label.configure(image=self.img)
         else:
             print("Image not loaded")
@@ -78,14 +82,7 @@ class App(tk.Tk):
 
     def openmultipleimages(self, filepaths):
         for filepath in filepaths:
-            opened_image = Image.open(filepath)
-            if(opened_image.width > 500 and opened_image.width > opened_image.height):
-                ratio = 500/opened_image.width
-                opened_image = opened_image.resize((500,int(opened_image.height*ratio)))
-
-            elif(opened_image.height > 500 and opened_image.width < opened_image.height):
-                ratio = 500/opened_image.width
-                opened_image = opened_image.resize((500,int(opened_image.height*ratio)))
+            opened_image = ScannerImage(filepath=filepath)
             self.images.append(opened_image)
             self.display_image()
 
@@ -95,27 +92,23 @@ class App(tk.Tk):
 
     def clearimages(self):
         self.images = []
-        self.img = None
-        self.currentimg = None
+        self.currentimg = self.NO_IMAGE
+        self.img = self.currentimg.shown_image
+        self.label.config(image=self.img)
 
     def zoomout(self):
-        if self.currentimg!=None:
-            self.zoomout_level+=1
-            self.zoomin_level-=1
-            image = self.images[self.image_index].resize((int(self.images[self.image_index].width*0.9**self.zoomout_level),int(self.images[self.image_index].height*0.9**self.zoomout_level)))
-            self.img = ImageTk.PhotoImage(image=image)
+        if self.currentimg!=self.NO_IMAGE:
+            self.currentimg.zoomout()
+            self.img = self.currentimg.shown_image
             self.label.configure(image=self.img)
         else:
             messagebox.showwarning("No Image", "Add an image")
             print("Image not loaded")
 
-
     def zoomin(self):
-        if self.currentimg!=None:
-            self.zoomout_level-=1
-            self.zoomin_level+=1
-            image = self.images[self.image_index].resize((int(self.images[self.image_index].width*1.1**self.zoomin_level),int(self.images[self.image_index].height*1.1**self.zoomin_level)))
-            self.img = ImageTk.PhotoImage(image=image)
+        if self.currentimg!=self.NO_IMAGE:
+            self.currentimg.zoomin()
+            self.img = self.currentimg.shown_image
             self.label.configure(image=self.img)
         else:
             messagebox.showwarning("No Image", "Add an image")
