@@ -11,6 +11,8 @@ from PIL import Image, ImageTk
 from tkinter import W, Frame, PhotoImage, ttk
 import cv2 as cv
 
+from ScannerImage import ScannerImage
+
 class App(tk.Tk):
     def __init__(self):
         super().__init__()        
