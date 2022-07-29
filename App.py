@@ -84,7 +84,7 @@ class App(tk.Tk):
         for filepath in filepaths:
             opened_image = ScannerImage(filepath=filepath)
             self.images.append(opened_image)
-            self.display_image()
+        self.display_image()
 
     def choosefolder(self):
         folder = tkinter.filedialog.askdirectory(initialdir=os.curdir+"/images")

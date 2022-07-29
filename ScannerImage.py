@@ -27,7 +27,6 @@ class ScannerImage():
 
 
         if(self.pil_image.width > 500 or self.pil_image.height > 500):
-            print("yes")
             if(self.pil_image.width > self.pil_image.height):
                 ratio_w = 500/self.pil_image.width
                 self.zoomout_level = round(math.log(ratio_w, 0.9))
