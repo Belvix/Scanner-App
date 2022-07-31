@@ -125,6 +125,11 @@ class ScannerImage():
         self.showing_thresh = False
         self.showing_outline = True
         return ImageTk.PhotoImage(Image.fromarray(outline)) 
+    
+    def getNormal(self):
+        normal = self.pil_image.resize((self.img_width, self.img_height))
+        self.shown_image = ImageTk.PhotoImage(normal)
+        self.noFilters()
 
     def noFilters(self):
         self.showing_outline = False

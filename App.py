@@ -57,7 +57,7 @@ class App(tk.Tk):
         self.middleframe.grid(column=0, row=0, sticky="EW")
         self.middleframe.columnconfigure(0, weight=1)
 
-        self.label.grid(column=0,row=0, rowspan=2, sticky="W")
+        self.label.grid(column=0,row=0, rowspan=2)
         self.previousimage.config(command=self.prevImage)
         self.previousimage.grid(column=1, row=0, sticky="SE")
         self.nextimage.config(command=self.nextImage)
@@ -104,6 +104,7 @@ class App(tk.Tk):
 
     def clearimages(self):
         self.images = []
+        self.image_index = 0
         self.currentimg = self.NO_IMAGE
         self.img = self.currentimg.shown_image
         self.label.config(image=self.img)
@@ -119,6 +120,7 @@ class App(tk.Tk):
             self.currentimg.showing_thresh = True
             self.currentimg.showing_outline = False
         else:
+            self.currentimg.getNormal()
             self.label.config(image = self.currentimg.shown_image)
             self.currentimg.noFilters()
 
@@ -133,6 +135,7 @@ class App(tk.Tk):
             self.currentimg.showing_outline = True
             self.currentimg.showing_thresh = False
         else:
+            self.currentimg.getNormal()
             self.label.config(image = self.currentimg.shown_image)
             self.currentimg.noFilters()
 
