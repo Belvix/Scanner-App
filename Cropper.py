@@ -2,8 +2,7 @@ from ast import Str
 import cv2
 import numpy as np
 
-def crop(filepath: str):
-    image = cv2.imread(filepath)
+def crop(image: cv2.Mat):
     original = image.copy()
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     blurred = cv2.GaussianBlur(gray, (3, 3), 0)
@@ -15,7 +14,7 @@ def crop(filepath: str):
     blank = np.zeros(image.shape, dtype="uint8")
     cv2.drawContours(blank, cnts, -1,  (0,0,255), 1)
     blank = cv2.resize(blank,(int(blank.shape[1]*0.2),int(blank.shape[0]*0.2)))
-    cv2.imshow('blank',blank)
+    #cv2.imshow('blank',blank)
 
     # Iterate thorugh contours and filter for ROI
     image_number = 0
@@ -32,6 +31,7 @@ def crop(filepath: str):
 
     image = resize(image)
     thresh = resize(thresh)
+    return image, thresh
     cv2.imshow('thresh', thresh)
     cv2.imshow('image', image)
     cv2.waitKey(0)

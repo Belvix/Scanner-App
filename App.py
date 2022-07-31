@@ -1,11 +1,15 @@
 from code import compile_command
+from pickle import NONE
 from textwrap import indent
 import tkinter as tk
 import os
-from tkinter import messagebox
+from tkinter import BooleanVar, messagebox
 import tkinter.filedialog
 from turtle import right
+from typing_extensions import IntVar
 from cv2 import resize
+from numpy import var
+from sqlalchemy import false
 from Cropper import crop
 from PIL import Image, ImageTk
 from tkinter import W, Frame, PhotoImage, ttk
@@ -28,8 +32,12 @@ class App(tk.Tk):
         self.currentimg = self.NO_IMAGE
         self.img = self.currentimg.shown_image
 
+        self.thresh_button = BooleanVar()
+        self.outline_button = BooleanVar()
+
         self.menu = tk.Menu(self)
         self.file = tk.Menu(self.menu,tearoff=0)
+        self.right_click_menu = tk.Menu(self, tearoff=0)
         self.middleframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN, height=500)
         self.label = ttk.Label(self.middleframe, image = self.currentimg.shown_image)
         self.resizerframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN)
@@ -42,6 +50,9 @@ class App(tk.Tk):
         self.file.add_command(label="Open", command = self.selectmultiplefiles)
         self.file.add_command(label="Select Folder", command= self.choosefolder)
         self.file.add_command(label="Reset", command= self.clearimages)        
+
+        self.right_click_menu.add_checkbutton(label='Thresh', variable=self.thresh_button, command=self.show_thresh)
+        self.right_click_menu.add_checkbutton(label='Outline', variable=self.outline_button, command=self.show_outline)
 
         self.middleframe.grid(column=0, row=0, sticky="EW")
         self.middleframe.columnconfigure(0, weight=1)
@@ -66,6 +77,7 @@ class App(tk.Tk):
         self.bind('<Down>',self.zoomoutevent)
         self.bind('<Right>', self.nextImageEvent)
         self.bind('<Left>',self.prevImageEvent)
+        self.bind('<Button-3>', self.right_click_event)
         self.config(menu=self.menu)
 
     def display_image(self):
@@ -95,6 +107,35 @@ class App(tk.Tk):
         self.currentimg = self.NO_IMAGE
         self.img = self.currentimg.shown_image
         self.label.config(image=self.img)
+
+    def show_thresh(self):
+        if(self.currentimg==self.NO_IMAGE):
+            self.thresh_button.set(False)
+            return None
+        self.outline_button.set(False)
+        if(self.thresh_button.get()):
+            self.img = self.currentimg.getThresh()
+            self.label.config(image=self.img)
+            self.currentimg.showing_thresh = True
+            self.currentimg.showing_outline = False
+        else:
+            self.label.config(image = self.currentimg.shown_image)
+            self.currentimg.noFilters()
+
+    def show_outline(self):
+        if(self.currentimg==self.NO_IMAGE):
+            self.outline_button.set(False)
+            return None
+        self.thresh_button.set(False)
+        if(self.outline_button.get()):
+            self.img = self.currentimg.getOutline()
+            self.label.config(image=self.img)
+            self.currentimg.showing_outline = True
+            self.currentimg.showing_thresh = False
+        else:
+            self.label.config(image = self.currentimg.shown_image)
+            self.currentimg.noFilters()
+
 
     def zoomout(self):
         if self.currentimg!=self.NO_IMAGE:
@@ -141,6 +182,12 @@ class App(tk.Tk):
 
     def prevImageEvent(self,event):
         self.prevImage()
+
+    def right_click_event(self, event: tk.Event):
+        try:
+            self.right_click_menu.tk_popup(event.x_root, event.y_root)
+        finally:
+            self.right_click_menu.grab_release()
     
 root = App()
 root.geometry("1280x720+200+0")
