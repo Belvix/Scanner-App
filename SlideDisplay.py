@@ -6,7 +6,7 @@ from ScannerImage import ScannerImage
 class SlideDisplay(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent, highlightbackground="blue", highlightthickness=2, width=220, height=651)
-        self.image_list: list[ImageTk.PhotoImage] = [ImageTk.PhotoImage(Image.open("./assets/test/1.png")),ImageTk.PhotoImage(Image.open("./assets/test/2.png")),ImageTk.PhotoImage(Image.open("./assets/test/3.png"))]
+        self.image_list: list[ImageTk.PhotoImage] = list()
         self.label_list: list[tk.Label] = list()
         self.width: list[int] = list()
 
@@ -33,6 +33,14 @@ class SlideDisplay(tk.Frame):
             self.label_list.append(tk.Label(self, image=image.thumbnail_image, bd=2, relief="sunken"))
             self.width.append(image.thumbnail_image.width())
 
+        self.display_labels()
+
+    def reset(self):
+        self.width: list[int] = list()
+        for i in self.label_list:
+            i.place_forget()
+        self.label_list: list[tk.Label] = list()
+        self.image_list: list[ImageTk.PhotoImage] = list()
         self.display_labels()
     
     def display_labels(self):

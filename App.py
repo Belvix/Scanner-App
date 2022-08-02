@@ -116,6 +116,7 @@ class App(tk.Tk):
         self.image_index = 0
         self.currentimg = self.NO_IMAGE
         self.img = self.currentimg.shown_image
+        self.slide_display.reset()
         self.label.config(image=self.img)
 
     def show_thresh(self):
@@ -204,6 +205,7 @@ class App(tk.Tk):
     
     def left_click_event(self, event: tk.Event):
         widget: tk.Widget = event.widget
+        print(widget)
         if(widget.winfo_parent() == self.slide_display.winfo_parent() + "." + self.slide_display.winfo_name()):
             widget: tk.Label
             widget.configure(bd=5, relief="sunken")
