@@ -1,5 +1,6 @@
 from code import compile_command
 from pickle import NONE
+from sys import maxsize
 from textwrap import indent
 import tkinter as tk
 import os
@@ -14,6 +15,7 @@ from Cropper import crop
 from PIL import Image, ImageTk
 from tkinter import W, Frame, PhotoImage, ttk
 import cv2 as cv
+from SlideDisplay import SlideDisplay
 
 from ScannerImage import ScannerImage
 
@@ -40,6 +42,7 @@ class App(tk.Tk):
         self.right_click_menu = tk.Menu(self, tearoff=0)
         self.middleframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN, height=500)
         self.label = ttk.Label(self.middleframe, image = self.currentimg.shown_image)
+        self.slide_display = SlideDisplay(self.middleframe)
         self.resizerframe = tk.Frame(self, highlightbackground="black", highlightthickness=2, relief=tk.SUNKEN)
         self.previousimage = ttk.Button(self.middleframe, text="Prev")
         self.nextimage = ttk.Button(self.middleframe, text="Next")
@@ -55,22 +58,25 @@ class App(tk.Tk):
         self.right_click_menu.add_checkbutton(label='Outline', variable=self.outline_button, command=self.show_outline)
 
         self.middleframe.grid(column=0, row=0, sticky="EW")
+        self.middleframe.columnconfigure(1, weight=1)
         self.middleframe.columnconfigure(0, weight=1)
 
-        self.label.grid(column=0,row=0, rowspan=2)
+        self.label.grid(column=1,row=0, rowspan=2, sticky="W")
+        self.slide_display.grid(column=0,row=0, rowspan=2, sticky="NW", pady=20)
         self.previousimage.config(command=self.prevImage)
-        self.previousimage.grid(column=1, row=0, sticky="SE")
+        self.previousimage.grid(column=2, row=0, sticky="SE")
         self.nextimage.config(command=self.nextImage)
-        self.nextimage.grid(column=1,row=1, sticky="NE")
+        self.nextimage.grid(column=2,row=1, sticky="NE")
+
         self.resizerframe.columnconfigure(0, weight=1)
         self.resizerframe.columnconfigure(1, weight=1)
-        self.resizerframe.grid(column=0, row=2, sticky="sew")
+        self.resizerframe.grid(column=0, row=1, sticky="sew")
         self.resizedown.config(command=self.zoomout)
         self.resizedown.grid(column=0, row=0, sticky="S")
         self.resizeup.config(command=self.zoomin)
         self.resizeup.grid(column=1, row=0, sticky="S")
 
-        self.rowconfigure(0, weight=1, minsize=500, pad=1000)
+        self.rowconfigure(0, weight=1, minsize=591)
         self.columnconfigure(0, weight=1, minsize=500)
 
         self.bind('<Up>',self.zoominevent)
@@ -78,6 +84,8 @@ class App(tk.Tk):
         self.bind('<Right>', self.nextImageEvent)
         self.bind('<Left>',self.prevImageEvent)
         self.bind('<Button-3>', self.right_click_event)
+        self.bind('<Button-1>', self.left_click_event)
+        self.bind("<MouseWheel>", self.scroll_slide)
         self.config(menu=self.menu)
 
     def display_image(self):
@@ -96,6 +104,7 @@ class App(tk.Tk):
         for filepath in filepaths:
             opened_image = ScannerImage(filepath=filepath)
             self.images.append(opened_image)
+            self.slide_display.add_image_and_label(opened_image)
         self.display_image()
 
     def choosefolder(self):
@@ -151,6 +160,7 @@ class App(tk.Tk):
 
     def zoomin(self):
         if self.currentimg!=self.NO_IMAGE:
+            print(self.middleframe.winfo_height())
             self.currentimg.zoomin()
             self.img = self.currentimg.shown_image
             self.label.configure(image=self.img)
@@ -192,6 +202,19 @@ class App(tk.Tk):
         finally:
             self.right_click_menu.grab_release()
     
+    def left_click_event(self, event: tk.Event):
+        widget: tk.Widget = event.widget
+        if(widget.winfo_parent() == self.slide_display.winfo_parent() + "." + self.slide_display.winfo_name()):
+            widget: tk.Label
+            widget.configure(bd=5, relief="sunken")
+
+    def scroll_slide(self, event: tk.Event):
+        if(event.x_root > self.slide_display.winfo_rootx() and 
+                event.x_root < (self.slide_display.winfo_rootx() + self.slide_display.winfo_width()) and 
+                event.y_root > self.slide_display.winfo_rooty() and 
+                event.y_root < (self.slide_display.winfo_rooty() + self.slide_display.winfo_height())):
+            self.slide_display.scroll(event.delta)
+ 
 root = App()
 root.geometry("1280x720+200+0")
 root.mainloop()

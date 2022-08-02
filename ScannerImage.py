@@ -1,3 +1,4 @@
+from turtle import heading
 import cv2 as cv
 import tkinter as tk
 from PIL import Image, ImageTk
@@ -17,6 +18,10 @@ class ScannerImage():
 
         self.outline_image, self.thresh_image = cvUtils.crop(self.cv_image)
 
+        self.thumbnail_image = ImageTk.PhotoImage(image = self.createThumbnail())
+
+        print("thumbnail", self.thumbnail_image.width(), self.thumbnail_image.height())
+
         self.zoomin_level = 0
         self.zoomout_level = 0
 
@@ -32,8 +37,6 @@ class ScannerImage():
         
         self.update_dims()
         
-        print(self.img_height)
-
     def fit_image(self) -> Image:
         '''
         Function to resize a loaded image to fit inside the window
@@ -59,7 +62,6 @@ class ScannerImage():
     def update_dims(self):
         self.img_width = self.shown_image.width()
         self.img_height = self.shown_image.height()
-        print(self.img_height)
 
 
     def zoomout(self):
@@ -90,22 +92,15 @@ class ScannerImage():
     def zoomin(self):
         self.zoomin_level+=1
         self.zoomout_level-=1
-        print(self.zoomin_level)
         if(not self.showing_outline and not self.showing_thresh):
             self.shown_image = ImageTk.PhotoImage(self.pil_image.resize((int(self.pil_image.width*1.1**self.zoomin_level),
                                                                         int(self.pil_image.height*1.1**self.zoomin_level))))
         elif(self.showing_thresh):
-            # thresh_height = np.size(self.thresh_image, 0)
-            # thresh_width = np.size(self.thresh_image, 1)
-
             thresh = cv.resize(self.thresh_image,(int(self.pil_image.width*1.1**self.zoomin_level),
                                                   int(self.pil_image.height*1.1**self.zoomin_level)))
             thresh = cv.cvtColor(thresh, cv.COLOR_BGR2RGB)
             self.shown_image = ImageTk.PhotoImage(Image.fromarray(thresh))
         elif(self.showing_outline):
-            # outline_height = np.size(self.outline_image, 0)
-            # outline_width = np.size(self.outline_image, 1)
-            
             outline = cv.resize(self.outline_image,(int(self.pil_image.width*1.1**self.zoomin_level),
                                                   int(self.pil_image.height*1.1**self.zoomin_level)))
             outline = cv.cvtColor(outline, cv.COLOR_BGR2RGB)
@@ -130,6 +125,14 @@ class ScannerImage():
         normal = self.pil_image.resize((self.img_width, self.img_height))
         self.shown_image = ImageTk.PhotoImage(normal)
         self.noFilters()
+
+    def createThumbnail(self):
+        transparent_bg = Image.new('RGBA', (200,100), (0,0,0,0))
+
+        ratio_h = 100/self.pil_image.height
+        image = self.pil_image.resize((int(self.pil_image.width*ratio_h), 100))
+        Image.Image.paste(transparent_bg, image, (100-image.width//2,0))
+        return transparent_bg
 
     def noFilters(self):
         self.showing_outline = False

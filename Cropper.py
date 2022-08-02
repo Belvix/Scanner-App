@@ -20,7 +20,7 @@ def crop(image: cv2.Mat):
     image_number = 0
     for c in cnts:
         x,y,w,h = cv2.boundingRect(c)
-        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 10)
+        cv2.rectangle(image, (x, y), (x + w, y + h), (36,255,12), 5)
         if w<20 or h<20:
             continue
         ROI = original[y+1:y+h-1, x+1:x+w-1]
